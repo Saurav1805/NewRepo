@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 448472727005.dkr.ecr.ap-south-1.amazonaws.com
+      - REPOSITORY_URI=448472727005.dkr.ecr.ap-south-1.amazonaws.com/latest
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
+      - echo Building the Docker image...
+      - docker build -t pipelinetest .
+      - docker tag pipelinetest:latest 448472727005.dkr.ecr.ap-south-1.amazonaws.com/pipelinetest:latest
+  post_build:
+    commands:
+      - echo Pushing the Docker images...
+      - docker push 448472727005.dkr.ecr.ap-south-1.amazonaws.com/pipelinetest:latest
+      - docker push pipelinetest:latest 448472727005.dkr.ecr.ap-south-1.amazonaws.com/pipelinetest:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"latest","448472727005.dkr.ecr.ap-south-1.amazonaws.com/pipelinetest":"%s"}]' 448472727005.dkr.ecr.ap-south-1.amazonaws.com/pipelinetest:latest > imagedefinitions.json
+artifacts:
+    files: imagedefinitions.json
