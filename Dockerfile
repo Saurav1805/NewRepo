@@ -5,9 +5,8 @@ FROM ubuntu:22.04
 # Updating the machine
 RUN apt update
 
-# Installing Nodejs and Npm
+# Installing Nodejs
 RUN apt install nodejs -y
-RUN apt install npm -y
 
 
 # Installing WebServer
